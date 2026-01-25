@@ -22,7 +22,7 @@ Cukup jalankan perintah ini di terminal VPS (sebagai root):
 
 ```bash
 # 1. Download Script
-wget [https://raw.githubusercontent.com/USERNAME_GITHUB_ANDA/NAMA_REPO_ANDA/main/install.sh](https://raw.githubusercontent.com/USERNAME_GITHUB_ANDA/NAMA_REPO_ANDA/main/install.sh)
+wget [https://raw.githubusercontent.com/masehgek/redroid_vps/main/install.sh](https://raw.githubusercontent.com/masehgek/redroid_vps/main/install.sh)
 
 # 2. Beri Izin Eksekusi
 chmod +x install.sh
