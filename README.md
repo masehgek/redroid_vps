@@ -19,6 +19,10 @@ Script instalasi otomatis untuk **Redroid (Android in Docker)** yang dioptimalka
 ### 📥 Cara Install (Di VPS Ubuntu/Debian)
 
 Cukup jalankan perintah ini di terminal VPS (sebagai root):
+```bash
+wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/gen.sh && chmod +x gen.sh && ./gen.sh
+
+```
 
 ```bash
 # 1. Download Script
