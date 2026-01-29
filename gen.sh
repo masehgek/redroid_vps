@@ -2,24 +2,19 @@
 
 # ==========================================================
 #   0. INSTALL DEPENDENCIES (KHUSUS VPS FRESH)
-#   (Bagian ini ditambahkan agar script jalan di VPS kosong)
 # ==========================================================
 
 echo ">>> [SETUP] Mempersiapkan VPS Fresh..."
 
-# Cek apakah user adalah root
 if [ "$EUID" -ne 0 ]; then 
   echo "Tolong jalankan sebagai root (sudo su)"
   exit
 fi
 
-# Update & Install Paket Wajib (Docker, ADB, Curl, jq)
 if ! command -v docker &> /dev/null || ! command -v adb &> /dev/null; then
     echo ">>> [INSTALL] Menginstall Docker & ADB..."
     apt-get update -y
     apt-get install -y docker.io android-tools-adb curl unzip dos2unix coreutils
-    
-    # Jalankan service Docker
     systemctl start docker
     systemctl enable docker
 else
@@ -27,11 +22,10 @@ else
 fi
 
 # ==========================================================
-#   REDROID GEN - ULTIMATE V8 (200+ DEVICES + FULL FEATURES)
+#   REDROID GEN - ULTIMATE V8 (PRE-DOWNLOAD FIX)
 # ==========================================================
 
 # 1. SETUP KERNEL
-# Memastikan modul binderfs aktif agar Redroid bisa jalan
 sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
 sudo modprobe ashmem_linux
 sudo mkdir -p /dev/binderfs
@@ -40,7 +34,7 @@ sudo chmod 777 /dev/binderfs/*
 [ ! -e /dev/ashmem ] && sudo mknod /dev/ashmem c 10 61
 sudo chmod 777 /dev/ashmem
 
-# 2. DATABASE RAKSASA (200+ REAL DEVICES)
+# 2. DATABASE RAKSASA
 DEVICES=(
     "samsung|samsung|SM-S918B|samsung/dm3q/dm3q:13/TP1A.220624.014/S918BXXU1BWK4:user/release-keys"
     "samsung|samsung|SM-S911B|samsung/dm1q/dm1q:13/TP1A.220624.014/S911BXXU1BWK4:user/release-keys"
@@ -307,17 +301,17 @@ echo "Phone        : $GEN_PHONE"
 echo "VPS IP       : $MY_IP"
 echo "----------------------------------------------"
 
-# 7. MEMBERSIHKAN CONTAINER (VERBOSE)
+# 7. MEMBERSIHKAN CONTAINER
 echo ">>> [CLEANING] Membersihkan sisa container..."
 sudo docker rm -f android_11 > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo "   + Container lama dihapus."
-else
-    echo "   + Container bersih."
-fi
-
 sudo rm -rf ~/data_11 && mkdir -p ~/data_11
 echo "   + Data reset selesai."
+
+# ==========================================================
+#   DOWNLOAD IMAGE DULU (AGAR TIDAK NUMPUK SAAT RUN)
+# ==========================================================
+echo ">>> [DOWNLOAD] Memastikan Image Redroid tersedia..."
+sudo docker pull redroid/redroid:11.0.0-latest
 
 # 8. JALANKAN CONTAINER
 echo ">>> [STARTING] Menjalankan Android 11..."
