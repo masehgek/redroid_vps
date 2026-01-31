@@ -1,76 +1,119 @@
 #!/bin/bash
 
+echo "=============================================="
+echo ">>> AUTO INSTALL: REALME NARZO (HOST MODE)"
+echo ">>> Include: Setup Kernel & Fresh Install VPS"
+echo "=============================================="
+
+if [ "$EUID" -ne 0 ]; then 
+  echo "Tolong jalankan sebagai root (sudo su)"
+  exit
+fi
+
 # ==========================================================
-#  REDROID AUTO INSTALLER (HOST MODE / DIRECT NETWORK)
-#  Device: Realme RMX3241 | Res: 720x1600 | DPI: 320
-#  Fix: Client Disconnected / Keep Alive Error on Mobile
+# 1. SETUP INSTALL VPS FRESH (DOCKER & DEPENDENCIES)
+# ==========================================================
+echo ">>> [SETUP] Update & Install Dependencies..."
+apt-get update -y
+# Install Docker & ADB jika belum ada
+apt-get install -y docker.io android-tools-adb curl kmod
+
+# Pastikan Docker Service jalan
+systemctl start docker
+systemctl enable docker
+
+# ==========================================================
+# 2. SETUP KERNEL (WAJIB UNTUK REDROID)
+# ==========================================================
+echo ">>> [KERNEL] Memuat modul binder & ashmem..."
+# Load modules
+modprobe binder_linux devices="binder,hwbinder,vndbinder" 2>/dev/null
+modprobe ashmem_linux 2>/dev/null
+
+# Setup BinderFS
+mkdir -p /dev/binderfs
+mount -t binder binder /dev/binderfs 2>/dev/null
+chmod 777 /dev/binderfs/*
+
+# Setup Ashmem (Membuat node jika tidak ada)
+if [ ! -e /dev/ashmem ]; then
+    mknod /dev/ashmem c 10 61
+    chmod 777 /dev/ashmem
+fi
+
+# ==========================================================
+# 3. LOGIKA UTAMA (Sesuai Permintaan Anda)
 # ==========================================================
 
-echo "========================================="
-echo "   STARTING REDROID INSTALLATION         "
-echo "   Mode: HOST NETWORK (Bypass Bridge)    "
-echo "========================================="
+# MATIKAN ADB SERVER BAWAAN VPS (WAJIB!)
+echo ">>> [KILL] Mematikan ADB Server host..."
+adb kill-server > /dev/null 2>&1
+killall adb > /dev/null 2>&1
+killall adbd > /dev/null 2>&1
 
-# 1. SETUP DOCKER & KERNEL DRIVERS
-# Wajib untuk VPS Fresh/Kosong
-echo "[+] Installing Docker & Kernel Modules..."
-sudo apt-get update -y
-sudo apt-get install -y docker.io linux-modules-extra-$(uname -r)
+# BERSIHKAN CONTAINER
+echo ">>> [CLEAN] Hapus container lama..."
+sudo docker rm -f android_8 > /dev/null 2>&1
+sudo rm -rf ~/data_8 && mkdir -p ~/data_8
 
-# 2. AKTIFKAN DRIVER BINDER & ASHMEM
-echo "[+] Enabling Binder & Ashmem Drivers..."
-sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
-sudo modprobe ashmem_linux
-# Simpan config agar permanen
-echo "binder_linux" | sudo tee /etc/modules-load.d/redroid.conf
-echo "ashmem_linux" | sudo tee -a /etc/modules-load.d/redroid.conf
+# DATABASE IDENTITAS (Tetap Realme Narzo 60x)
+DEVICES=("realme|realme|RMX3782|RMX3782|realme/RMX3782/RMX3782:13/TP1A.220905.001/1693393955:user/release-keys")
+IFS='|' read -r BRAND MANUF MODEL DEV_NAME FINGERPRINT <<< "${DEVICES[0]}"
 
-# 3. ENABLE DOCKER SERVICE
-sudo systemctl enable --now docker
+GEN_IMEI=$(shuf -i 860000000000000-869999999999999 -n 1)
+GEN_PHONE="+628$(shuf -i 100000000-999999999 -n 1)"
 
-# 4. CLEANUP OLD CONTAINER
-echo "[+] Removing old containers..."
-sudo docker rm -f android_8 >/dev/null 2>&1
+# JALANKAN DENGAN --net=host
+echo ">>> [START] Menjalankan Android 8 (Host Mode)..."
 
-# 5. GENERATE RANDOM IDENTITY
-RANDOM_IMEI=$(shuf -i 350000000000000-359999999999999 -n 1)
-RANDOM_SERIAL="RMX$(shuf -i 1000000-9999999 -n 1)"
-
-echo "[+] Generated ID: $RANDOM_SERIAL"
-
-# 6. RUN REDROID CONTAINER
-# Menggunakan --net=host untuk mengatasi masalah timeout di HP
-echo "[+] Starting Android..."
 sudo docker run -itd \
-    --privileged --pull always \
-    --restart=always \
     --net=host \
-    --cpus="4" \
-    --memory-swappiness=0 \
-    -v ~/data:/data \
-    -v /etc/localtime:/etc/localtime:ro \
-    -e TZ="Asia/Jakarta" \
+    --cpus="3" \
+    --memory="12288m" \
+    --memory-swap="-1" \
+    --privileged \
+    --restart=always \
+    -v ~/data_8:/data \
     --name android_8 \
     redroid/redroid:8.1.0-latest \
     androidboot.redroid_width=720 \
-    androidboot.redroid_height=1600 \
+    androidboot.redroid_height=1280 \
     androidboot.redroid_dpi=320 \
+    androidboot.redroid_fps=30 \
     androidboot.redroid_gpu_mode=guest \
-    androidboot.serialno=$RANDOM_SERIAL \
-    ro.serialno=$RANDOM_SERIAL \
-    ro.product.model=RMX3241 \
-    ro.product.brand=realme \
-    ro.product.manufacturer=realme \
-    ro.build.fingerprint="realme/RMX3241/RMX3241:11/RP1A.200720.011/1626337852:user/release-keys" \
-    ro.ril.oem.imei=$RANDOM_IMEI \
+    androidboot.serialno=$(cat /dev/urandom | tr -dc 'A-Z0-9' | fold -w 10 | head -n 1) \
+    ro.product.brand="$BRAND" \
+    ro.product.manufacturer="$MANUF" \
+    ro.product.model="$MODEL" \
+    ro.product.device="$DEV_NAME" \
+    ro.build.fingerprint="$FINGERPRINT" \
+    ro.ril.oem.imei=$GEN_IMEI \
+    ro.ril.oem.phone_number=$GEN_PHONE \
+    gsm.sim.msisdn=$GEN_PHONE \
     ro.adb.secure=0 \
     ro.secure=0 \
-    ro.debuggable=1 \
-    persist.sys.timezone=Asia/Jakarta \
-    persist.sys.language=id \
-    persist.sys.country=ID
+    ro.debuggable=1 > /dev/null
 
-echo "========================================="
-echo "   INSTALLATION SUCCESS!"
-echo "   Connect via ADB: <IP_VPS>:5555"
-echo "========================================="
+if [ $? -eq 0 ]; then
+    echo ">>> [SUKSES] Container berjalan di Host Network!"
+else
+    echo ">>> [ERROR] Gagal. Pastikan port 5555 kosong."
+    exit 1
+fi
+
+echo ">>> [WAIT] Menunggu booting 10 detik..."
+sleep 10
+
+# KONEKSI ADB (DARI DALAM)
+echo ">>> [SETUP] Mengatur sinyal..."
+docker exec android_8 setprop gsm.sim.operator.alpha "Telkomsel"
+docker exec android_8 setprop gsm.sim.operator.numeric "51010"
+docker exec android_8 setprop gsm.sim.msisdn "$GEN_PHONE"
+
+echo "=============================================="
+echo ">>> SIAP DIHUBUNGKAN!"
+echo ">>> IP VPS: $(curl -s ifconfig.me)"
+echo ">>> Port  : 5555"
+echo "=============================================="
+echo "PENTING: Jangan jalankan perintah 'adb connect' di terminal VPS ini lagi."
+echo "Langsung saja connect dari aplikasi EasyControl di HP/PC kamu."
