@@ -22,9 +22,14 @@ Cukup jalankan perintah ini di terminal VPS (sebagai root):
 
 Versi TUYUL:
 ```bash
-https://raw.githubusercontent.com/masehgek/redroid_vps/main/tuyul.sh && chmod +x tuyul.sh && mv tuyul.sh generate.sh && ./generate.sh
+wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/tuyul.sh && chmod +x tuyul.sh && mv tuyul.sh generate.sh && ./generate.sh
 
 ```
+Versi Single:
+```bash
+wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/single.sh  && chmod +x single.sh && ./single.sh
+```
+
 Versi gen :
 ```bash
 wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/gen.sh && chmod +x gen.sh && ./gen.sh
