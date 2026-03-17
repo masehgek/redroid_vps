@@ -303,7 +303,7 @@ adb -s localhost:5555 shell setprop gsm.current.phone-number "$GEN_PHONE"
 adb -s localhost:5555 shell setprop gsm.sim.msisdn "$GEN_PHONE"
 adb -s localhost:5555 shell setprop line1.number "$GEN_PHONE"
 sleep 2
-DUKU_URL="https://app.flow2hk.cc/packages/android/dukulive/1.4.2/dukulive1770365885.apk"
+DUKU_URL="https://app.flow2hk.cc/packages/android/dukulive/1.4.3/dukulive1773539296.apk"
 DUKU_PATH="/root/duku.apk"
 if [ ! -f "$DUKU_PATH" ]; then
     echo -e "${YELLOW}>>> [DOWNLOAD] Duku APK...${NC}"
