@@ -22,7 +22,7 @@ Cukup jalankan perintah ini di terminal VPS (sebagai root):
 
 Versi All-in-one:
 ```bash
-wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/banyak.sh && ./generate.sh
+wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/banyak.sh && chmod +x banyak.sh && ./banyak.sh
 ```
 
 Versi TUYUL:
