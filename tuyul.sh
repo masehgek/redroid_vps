@@ -176,7 +176,7 @@ sleep 2
 # ==========================================================
 # 7. INSTALL DUKU & VIP AUTO-LAUNCH
 # ==========================================================
-DUKU_URL="https://app.flow2hk.cc/packages/android/dukulive/1.4.3/dukulive1773539296.apk"
+DUKU_URL="https://app.flow2hk.cc/packages/android/dukulive/1.5.0/dukulive1775232812.apk"
 DUKU_PATH="/root/duku.apk"
 if [ ! -f "$DUKU_PATH" ]; then
     echo -e "${YELLOW}>>> [DOWNLOAD] Duku APK...${NC}"
