@@ -20,6 +20,10 @@ Script instalasi otomatis untuk **Redroid (Android in Docker)** yang dioptimalka
 
 Cukup jalankan perintah ini di terminal VPS (sebagai root):
 
+```bash
+wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/single_gapps.sh  && chmod +x single_gapps.sh && ./single_gapps.sh
+```
+
 Versi All-in-one:
 ```bash
 wget https://raw.githubusercontent.com/masehgek/redroid_vps/main/banyak.sh && chmod +x banyak.sh && ./banyak.sh
